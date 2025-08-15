@@ -313,7 +313,7 @@ func (p *ImagePreviewer) ImagePreviewWithRenderer(path string, maxWidth int, max
 		return result, nil
 
 	case RendererSixel:
-		result, err := p.renderWithSixel(img, maxWidth, maxHeight)
+		result, err := p.renderWithSixel(img, maxWidth, maxHeight, sideAreaWidth)
 		if err != nil {
 			// If Sixel fails, fall back to ANSI renderer
 			slog.Error("Sixel renderer failed, falling back to ANSI", "error", err)

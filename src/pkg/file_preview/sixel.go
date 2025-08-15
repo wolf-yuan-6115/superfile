@@ -60,7 +60,7 @@ func isSixelCapable() bool {
 }
 
 // renderWithSixel renders an image using Sixel graphics protocol
-func (p *ImagePreviewer) renderWithSixel(img image.Image, maxWidth, maxHeight int) (string, error) {
+func (p *ImagePreviewer) renderWithSixel(img image.Image, maxWidth, maxHeight, sideAreaWidth int) (string, error) {
 	// Validate dimensions
 	if maxWidth <= 0 || maxHeight <= 0 {
 		return "", fmt.Errorf("dimensions must be positive (maxWidth=%d, maxHeight=%d)", maxWidth, maxHeight)
@@ -112,12 +112,20 @@ func (p *ImagePreviewer) renderWithSixel(img image.Image, maxWidth, maxHeight in
 	}
 
 	result := buf.String()
+	
+	// Position cursor properly after Sixel rendering
+	// Similar to Kitty implementation, move cursor to line 1, column sideAreaWidth
+	// This prevents the terminal from becoming "crazy" after image rendering
+	var finalResult bytes.Buffer
+	finalResult.WriteString(result)
+	finalResult.WriteString(fmt.Sprintf("\x1b[1;%dH", sideAreaWidth))
+	
 	slog.Debug("Sixel rendering completed",
 		"original_size", fmt.Sprintf("%dx%d", originalWidth, originalHeight),
 		"final_size", fmt.Sprintf("%dx%d", finalWidth, finalHeight),
 		"output_size", len(result))
 
-	return result, nil
+	return finalResult.String(), nil
 }
 
 // resizeImageForSixel resizes image for Sixel rendering while maintaining quality

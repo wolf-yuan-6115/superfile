@@ -110,7 +110,7 @@ func TestSixelRendering(t *testing.T) {
 	previewer := NewImagePreviewer()
 	testImg := createTestImage(100, 100)
 
-	result, err := previewer.renderWithSixel(testImg, 10, 10)
+	result, err := previewer.renderWithSixel(testImg, 10, 10, 1)
 	if err != nil {
 		t.Errorf("renderWithSixel() failed: %v", err)
 	}
