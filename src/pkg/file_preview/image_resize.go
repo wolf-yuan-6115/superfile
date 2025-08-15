@@ -96,3 +96,8 @@ func resizeForANSI(img image.Image, maxWidth, maxHeight int) image.Image {
 	// Use maxHeight*2 because each terminal row represents 2 pixel rows in ANSI rendering
 	return imaging.Fit(img, maxWidth, maxHeight*2, imaging.Lanczos)
 }
+
+// resizeImage resizes an image to the specified dimensions while maintaining aspect ratio
+func resizeImage(img image.Image, width, height int) image.Image {
+	return imaging.Fit(img, width, height, imaging.Lanczos)
+}

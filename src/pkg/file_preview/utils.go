@@ -2,7 +2,9 @@ package filepreview
 
 import (
 	"log/slog"
+	"os"
 	"runtime"
+	"strings"
 	"sync"
 )
 
@@ -128,6 +130,50 @@ func getTerminalCellSizeWindows() (TerminalCellSize, bool) {
 	slog.Info("Using Windows default terminal cell size")
 	// TODO: Implement actual Windows Console API calls when running on Windows
 	return getWindowsDefaultCellSize(), true
+}
+
+// isKittyCapable checks if the terminal supports Kitty Graphics Protocol
+func isKittyCapable() bool {
+	termProgram := os.Getenv("TERM_PROGRAM")
+	term := os.Getenv("TERM")
+
+	// Check for specific environment variables that indicate Kitty support
+	if os.Getenv("KITTY_WINDOW_ID") != "" {
+		slog.Debug("Kitty protocol supported via KITTY_WINDOW_ID")
+		return true
+	}
+
+	if os.Getenv("GHOSTTY_RESOURCES_DIR") != "" {
+		slog.Debug("Kitty protocol supported via GHOSTTY_RESOURCES_DIR")
+		return true
+	}
+
+	// Check TERM environment variable
+	if term == "xterm-kitty" || term == "xterm-ghostty" {
+		slog.Debug("Kitty protocol supported via TERM", "terminal", term)
+		return true
+	}
+
+	// Check TERM_PROGRAM environment variable
+	knownKittyTerminals := []string{
+		"WezTerm",  // WezTerm supports Kitty graphics
+		"ghostty",  // Ghostty supports Kitty graphics
+	}
+
+	for _, knownTerm := range knownKittyTerminals {
+		if strings.EqualFold(termProgram, knownTerm) {
+			slog.Debug("Kitty protocol supported via TERM_PROGRAM", "terminal", termProgram)
+			return true
+		}
+	}
+
+	slog.Debug("Kitty protocol not supported", "TERM_PROGRAM", termProgram, "TERM", term)
+	return false
+}
+
+// IsKittyCapable checks if the terminal supports Kitty Graphics Protocol
+func (p *ImagePreviewer) IsKittyCapable() bool {
+	return isKittyCapable()
 }
 
 // getWindowsDefaultCellSize returns reasonable defaults for Windows
