@@ -563,6 +563,13 @@ func (m *model) renderImagePreview(box lipgloss.Style, itemPath string, previewW
 		return rendered
 	}
 
+	// Check if this looks like Sixel protocol output (starts with ESC P)
+	// For Sixel protocol, avoid using lipgloss alignment to prevent layout drift
+	if strings.HasPrefix(imageRender, "\x1bP") {
+		rendered := common.FilePreviewBox(previewHeight, previewWidth).Render(imageRender)
+		return rendered
+	}
+
 	// For ANSI output, we can safely use vertical alignment
 	return box.AlignVertical(lipgloss.Center).AlignHorizontal(lipgloss.Center).Render(imageRender)
 }

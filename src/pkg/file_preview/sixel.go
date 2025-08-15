@@ -100,6 +100,10 @@ func (p *ImagePreviewer) renderWithSixel(img image.Image, maxWidth, maxHeight, s
 
 	// Convert to Sixel format
 	var buf bytes.Buffer
+	
+	// Clear any existing Sixel images first (similar to Kitty implementation)
+	buf.WriteString(ClearSixelImages())
+	
 	enc := sixel.NewEncoder(&buf)
 
 	// Configure encoder for better quality
@@ -112,14 +116,13 @@ func (p *ImagePreviewer) renderWithSixel(img image.Image, maxWidth, maxHeight, s
 	}
 
 	result := buf.String()
-	
+
 	// Position cursor properly after Sixel rendering
-	// Similar to Kitty implementation, move cursor to line 1, column sideAreaWidth
-	// This prevents the terminal from becoming "crazy" after image rendering
+	// Use the same approach as Kitty implementation for consistency
 	var finalResult bytes.Buffer
 	finalResult.WriteString(result)
 	finalResult.WriteString(fmt.Sprintf("\x1b[1;%dH", sideAreaWidth))
-	
+
 	slog.Debug("Sixel rendering completed",
 		"original_size", fmt.Sprintf("%dx%d", originalWidth, originalHeight),
 		"final_size", fmt.Sprintf("%dx%d", finalWidth, finalHeight),
@@ -148,8 +151,10 @@ func ClearSixelImages() string {
 		return "" // No need to clear if terminal doesn't support Sixel
 	}
 
-	// Sixel clear sequence
-	return "\x1b[2J" // Clear screen
+	// For Sixel, we don't have a specific "clear images" command like Kitty
+	// Instead, use a minimal clearing approach that doesn't disrupt the layout
+	// Just reset to default attributes without clearing the screen
+	return "\x1b[0m" // Reset to default attributes
 }
 
 // ClearSixelImages clears Sixel images from the terminal (method version)

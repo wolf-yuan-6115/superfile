@@ -10,7 +10,7 @@ import (
 // createTestImage creates a simple test image for testing purposes
 func createTestImage(width, height int) image.Image {
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
-	
+
 	// Create a simple pattern
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
@@ -23,7 +23,7 @@ func createTestImage(width, height int) image.Image {
 			img.Set(x, y, c)
 		}
 	}
-	
+
 	return img
 }
 
@@ -91,11 +91,11 @@ func TestIsSixelCapable(t *testing.T) {
 
 func TestImagePreviewerSixelCapable(t *testing.T) {
 	previewer := NewImagePreviewer()
-	
+
 	// Test the method version
 	os.Setenv("TERM", "foot")
 	defer os.Unsetenv("TERM")
-	
+
 	if !previewer.IsSixelCapable() {
 		t.Error("IsSixelCapable() should return true for foot terminal")
 	}
@@ -131,16 +131,16 @@ func TestSixelClearImages(t *testing.T) {
 	// Test the function version
 	os.Setenv("TERM", "foot")
 	defer os.Unsetenv("TERM")
-	
+
 	result := ClearSixelImages()
-	if result != "\x1b[2J" {
-		t.Errorf("ClearSixelImages() = %q, expected %q", result, "\x1b[2J")
+	if result != "\x1b[0m" {
+		t.Errorf("ClearSixelImages() = %q, expected %q", result, "\x1b[0m")
 	}
 
 	// Test when not Sixel capable
 	os.Setenv("TERM", "dumb")
 	defer os.Unsetenv("TERM")
-	
+
 	result = ClearSixelImages()
 	if result != "" {
 		t.Errorf("ClearSixelImages() = %q, expected empty string for non-Sixel terminal", result)
@@ -149,29 +149,29 @@ func TestSixelClearImages(t *testing.T) {
 
 func TestSixelImagePreviewerClearImages(t *testing.T) {
 	previewer := NewImagePreviewer()
-	
+
 	// Test the method version
 	os.Setenv("TERM", "foot")
 	defer os.Unsetenv("TERM")
-	
+
 	result := previewer.ClearSixelImages()
-	if result != "\x1b[2J" {
-		t.Errorf("ClearSixelImages() = %q, expected %q", result, "\x1b[2J")
+	if result != "\x1b[0m" {
+		t.Errorf("ClearSixelImages() = %q, expected %q", result, "\x1b[0m")
 	}
 }
 
 func TestResizeImage(t *testing.T) {
 	testImg := createTestImage(200, 200)
-	
+
 	resized := resizeImage(testImg, 100, 100)
 	bounds := resized.Bounds()
-	
+
 	// The resize should maintain aspect ratio, so it might not be exactly 100x100
 	// but should be within reasonable bounds
 	if bounds.Dx() > 100 || bounds.Dy() > 100 {
 		t.Errorf("resizeImage() produced image larger than requested: %dx%d", bounds.Dx(), bounds.Dy())
 	}
-	
+
 	if bounds.Dx() == 0 || bounds.Dy() == 0 {
 		t.Error("resizeImage() produced empty image")
 	}
@@ -180,7 +180,7 @@ func TestResizeImage(t *testing.T) {
 func TestImagePreviewWithSixelRenderer(t *testing.T) {
 	// Test the full pipeline with a real image file
 	imagePath := "../../../asset/superfileicon.png"
-	
+
 	// Check if the test image exists
 	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
 		t.Skip("Test image not found, skipping integration test")
@@ -191,7 +191,7 @@ func TestImagePreviewWithSixelRenderer(t *testing.T) {
 	defer os.Unsetenv("TERM")
 
 	previewer := NewImagePreviewer()
-	
+
 	// Test the ImagePreviewWithRenderer function with Sixel
 	result, err := previewer.ImagePreviewWithRenderer(imagePath, 20, 20, "#000000", RendererSixel, 4)
 	if err != nil {
@@ -208,7 +208,7 @@ func TestImagePreviewWithSixelRenderer(t *testing.T) {
 func TestImagePreviewFallbackChain(t *testing.T) {
 	// Test the fallback chain: Kitty -> Sixel -> ANSI
 	imagePath := "../../../asset/superfileicon.png"
-	
+
 	// Check if the test image exists
 	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
 		t.Skip("Test image not found, skipping fallback chain test")
@@ -220,7 +220,7 @@ func TestImagePreviewFallbackChain(t *testing.T) {
 	defer os.Unsetenv("TERM")
 
 	previewer := NewImagePreviewer()
-	
+
 	// The main ImagePreview function should try Sixel since Kitty is not available
 	result, err := previewer.ImagePreview(imagePath, 20, 20, "#000000", 4)
 	if err != nil {
