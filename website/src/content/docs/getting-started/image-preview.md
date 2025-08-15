@@ -29,10 +29,10 @@ superfile automatically detects your terminal using the `$TERM` and `$TERM_PROGR
 | **Tabby**             | Inline images    | ❌                     |
 | **Hyper**             | Inline images    | ❌                     |
 | **Mintty**            | Inline images    | ❌                     |
-| **foot**              | Sixel graphics   | ❌                     |
-| **Black Box**         | Sixel graphics   | ❌                     |
+| **foot**              | Sixel graphics   | ✅                     |
+| **Black Box**         | Sixel graphics   | ✅                     |
 
-> ✅ means full support for inline image preview using Kitty protocol  
+> ✅ means full support for inline image preview (using Kitty protocol or Sixel graphics)  
 > ❌ means image preview is currently not supported
 
 ---
@@ -44,7 +44,7 @@ superfile supports the following rendering protocols and will automatically choo
 | Protocol Name     | Description                                                                                   | Status      |
 |-------------------|-----------------------------------------------------------------------------------------------|-------------|
 | **Kitty protocol** | Most capable, pixel-accurate rendering with transparency and scaling support.                | ✅ Preferred|
-| **Sixel**          | Old standard used in DEC terminals and some modern ones like foot.                           | ❌          |
+| **Sixel**          | Old standard used in DEC terminals and some modern ones like foot.                           | ✅          |
 | **iTerm2 inline**  | iTerm2’s proprietary image format, used in Tabby, Hyper, etc.                                | ❌          |
 | **ANSI**           | Fallback text rendering using ANSI blocks or metadata only.                                  | ✅ Always   |
 

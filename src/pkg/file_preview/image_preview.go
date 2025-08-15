@@ -23,6 +23,7 @@ type ImageRenderer int
 const (
 	RendererANSI ImageRenderer = iota
 	RendererKitty
+	RendererSixel
 )
 
 // ImagePreviewCache stores cached image previews
@@ -236,8 +237,26 @@ func (p *ImagePreviewer) ImagePreview(path string, maxWidth int, maxHeight int,
 			return preview, nil
 		}
 
-		// Fall through to ANSI if Kitty fails
-		slog.Error("Kitty renderer failed, falling back to ANSI", "error", err)
+		// Fall through to Sixel if Kitty fails
+		slog.Error("Kitty renderer failed, falling back to Sixel", "error", err)
+	}
+
+	// Try Sixel if available
+	if p.IsSixelCapable() {
+		// Check cache for Sixel renderer
+		if preview, found := p.cache.Get(path, dimensions, RendererSixel); found {
+			return preview, nil
+		}
+
+		preview, err := p.ImagePreviewWithRenderer(path, maxWidth, maxHeight, defaultBGColor, RendererSixel, sideAreaWidth)
+		if err == nil {
+			// Cache the successful result
+			p.cache.Set(path, dimensions, preview, RendererSixel)
+			return preview, nil
+		}
+
+		// Fall through to ANSI if Sixel fails
+		slog.Error("Sixel renderer failed, falling back to ANSI", "error", err)
 	}
 
 	// Check cache for ANSI renderer
@@ -289,6 +308,15 @@ func (p *ImagePreviewer) ImagePreviewWithRenderer(path string, maxWidth int, max
 		if err != nil {
 			// If kitty fails, fall back to ANSI renderer
 			slog.Error("Kitty renderer failed, falling back to ANSI", "error", err)
+			return p.ANSIRenderer(img, defaultBGColor, maxWidth, maxHeight)
+		}
+		return result, nil
+
+	case RendererSixel:
+		result, err := p.renderWithSixel(img, maxWidth, maxHeight)
+		if err != nil {
+			// If Sixel fails, fall back to ANSI renderer
+			slog.Error("Sixel renderer failed, falling back to ANSI", "error", err)
 			return p.ANSIRenderer(img, defaultBGColor, maxWidth, maxHeight)
 		}
 		return result, nil
