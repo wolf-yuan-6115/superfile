@@ -23,6 +23,7 @@ type ImageRenderer int
 const (
 	RendererANSI ImageRenderer = iota
 	RendererKitty
+	RendererITerm2
 )
 
 // ImagePreviewCache stores cached image previews
@@ -222,7 +223,7 @@ func (p *ImagePreviewer) ImagePreview(path string, maxWidth int, maxHeight int,
 	// Create dimensions string for cache key
 	dimensions := fmt.Sprintf("%d,%d,%s,%d", maxWidth, maxHeight, defaultBGColor, sideAreaWidth)
 
-	// Try Kitty first as it's more modern
+	// Try Kitty first as it's most modern and capable
 	if p.IsKittyCapable() {
 		// Check cache for Kitty renderer
 		if preview, found := p.cache.Get(path, dimensions, RendererKitty); found {
@@ -236,8 +237,26 @@ func (p *ImagePreviewer) ImagePreview(path string, maxWidth int, maxHeight int,
 			return preview, nil
 		}
 
-		// Fall through to ANSI if Kitty fails
-		slog.Error("Kitty renderer failed, falling back to ANSI", "error", err)
+		// Fall through to next renderer if Kitty fails
+		slog.Error("Kitty renderer failed, trying iTerm2", "error", err)
+	}
+
+	// Try iTerm2 inline image protocol as second choice
+	if p.IsITerm2Capable() {
+		// Check cache for iTerm2 renderer
+		if preview, found := p.cache.Get(path, dimensions, RendererITerm2); found {
+			return preview, nil
+		}
+
+		preview, err := p.ImagePreviewWithRenderer(path, maxWidth, maxHeight, defaultBGColor, RendererITerm2, sideAreaWidth)
+		if err == nil {
+			// Cache the successful result
+			p.cache.Set(path, dimensions, preview, RendererITerm2)
+			return preview, nil
+		}
+
+		// Fall through to ANSI if iTerm2 fails
+		slog.Error("iTerm2 renderer failed, falling back to ANSI", "error", err)
 	}
 
 	// Check cache for ANSI renderer
@@ -289,6 +308,16 @@ func (p *ImagePreviewer) ImagePreviewWithRenderer(path string, maxWidth int, max
 		if err != nil {
 			// If kitty fails, fall back to ANSI renderer
 			slog.Error("Kitty renderer failed, falling back to ANSI", "error", err)
+			return p.ANSIRenderer(img, defaultBGColor, maxWidth, maxHeight)
+		}
+		return result, nil
+
+	case RendererITerm2:
+		result, err := p.renderWithITerm2(img, path, originalWidth,
+			originalHeight, maxWidth, maxHeight, sideAreaWidth)
+		if err != nil {
+			// If iTerm2 fails, fall back to ANSI renderer
+			slog.Error("iTerm2 renderer failed, falling back to ANSI", "error", err)
 			return p.ANSIRenderer(img, defaultBGColor, maxWidth, maxHeight)
 		}
 		return result, nil
