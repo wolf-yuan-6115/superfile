@@ -23,17 +23,21 @@ superfile automatically detects your terminal using the `$TERM` and `$TERM_PROGR
 | **kitty**             | Kitty protocol   | ✅                     |
 | **WezTerm**           | Kitty protocol   | ✅                     |
 | **Ghostty**           | Kitty protocol   | ✅                     |
-| **iTerm2**            | Inline images    | ✅                     |
-| **Konsole**           | Inline images    | ✅                     |
-| **VSCode**            | Inline images    | ✅                     |
-| **Tabby**             | Inline images    | ✅                     |
-| **Hyper**             | Inline images    | ✅                     |
-| **Mintty**            | Inline images    | ✅                     |
-| **foot**              | Sixel graphics   | ❌                     |
-| **Black Box**         | Sixel graphics   | ❌                     |
+| **iTerm2**            | iTerm2 inline    | ✅                     |
+| **VSCode**            | iTerm2 inline    | ✅                     |
+| **Tabby**             | iTerm2 inline    | ✅                     |
+| **Hyper**             | iTerm2 inline    | ✅                     |
+| **Mintty**            | iTerm2 inline    | ✅                     |
+| **Warp**              | iTerm2 inline    | ✅                     |
+| **Rio**               | iTerm2 inline    | ✅                     |
+| **Konsole**           | iTerm2 inline    | ✅                     |
+| **foot**              | Sixel graphics   | ✅                     |
+| **Windows Terminal**  | Sixel graphics   | ✅                     |
+| **Black Box**         | Sixel graphics   | ✅                     |
+| **xterm**             | Sixel graphics   | ✅                     |
 
-> ✅ means full support for inline image preview using Kitty protocol or iTerm2 inline image protocol  
-> ❌ means image preview is currently not supported
+> ✅ means full support for inline image preview using one of the supported protocols
+> Protocols are tried in order: Kitty → iTerm2 inline → Sixel → ANSI fallback
 
 ---
 
@@ -44,7 +48,7 @@ superfile supports the following rendering protocols and will automatically choo
 | Protocol Name     | Description                                                                                   | Status      |
 |-------------------|-----------------------------------------------------------------------------------------------|-------------|
 | **Kitty protocol** | Most capable, pixel-accurate rendering with transparency and scaling support.                | ✅ Preferred|
-| **Sixel**          | Old standard used in DEC terminals and some modern ones like foot.                           | ❌          |
+| **Sixel**          | DEC standard graphics protocol with wide terminal support including foot, xterm, Windows Terminal. | ✅ Tertiary |
 | **iTerm2 inline**  | iTerm2’s proprietary image format, used in iTerm2, VSCode, Tabby, Hyper, Konsole, etc.     | ✅ Secondary|
 | **ANSI**           | Fallback text rendering using ANSI blocks or metadata only.                                  | ✅ Always   |
 
@@ -56,8 +60,10 @@ superfile detects terminal capabilities by inspecting:
 
 - `$TERM`
 - `$TERM_PROGRAM`
+- Specific environment variables like `$KITTY_WINDOW_ID`, `$ITERM_SESSION_ID`, `$VSCODE_INJECTION`, `$WT_SESSION`
+- Terminal feature queries (when supported)
 
-These variables help us decide whether advanced rendering might be possible. However, real support is confirmed at runtime using terminal queries.
+These variables help us decide whether advanced rendering might be possible. The detection system follows Yazi's comprehensive approach with fallback chains to ensure maximum terminal compatibility.
 
 To scale images correctly, superfile sends the following escape code:
 
@@ -75,6 +81,8 @@ If your terminal does not support `\x1b[16t`, we fallback to default assumptions
 
 ## Graceful Fallback to ANSI
 
-When advanced image preview isn't supported (for example, when the terminal doesn't support the Kitty protocol), superfile gracefully falls back to an ANSI-based preview using color-coded blocks.
+When advanced image preview isn't supported (for example, when the terminal doesn't support any of the graphics protocols), superfile gracefully falls back to an ANSI-based preview using color-coded blocks.
 
-This ensures a consistent and reliable experience across all terminal environments.
+The fallback chain is: **Kitty Protocol** → **iTerm2 Inline Images** → **Sixel Graphics** → **ANSI Blocks**
+
+This ensures a consistent and reliable experience across all terminal environments, from modern terminals with advanced graphics support to legacy terminals with only basic ANSI color support.
