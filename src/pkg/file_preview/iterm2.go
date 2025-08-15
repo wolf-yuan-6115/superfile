@@ -16,15 +16,39 @@ func isITerm2Capable() bool {
 	termProgram := os.Getenv("TERM_PROGRAM")
 	term := os.Getenv("TERM")
 
+	// Check for specific environment variables that indicate iTerm2 support
+	if os.Getenv("ITERM_SESSION_ID") != "" {
+		slog.Debug("iTerm2 protocol supported via ITERM_SESSION_ID")
+		return true
+	}
+
+	if os.Getenv("VSCODE_INJECTION") != "" {
+		slog.Debug("iTerm2 protocol supported via VSCODE_INJECTION")
+		return true
+	}
+
+	if os.Getenv("TABBY_CONFIG_DIRECTORY") != "" {
+		slog.Debug("iTerm2 protocol supported via TABBY_CONFIG_DIRECTORY")
+		return true
+	}
+
+	if os.Getenv("WARP_HONOR_PS1") != "" {
+		slog.Debug("iTerm2 protocol supported via WARP_HONOR_PS1")
+		return true
+	}
+
 	// List of known terminal identifiers that support iTerm2 inline image protocol
 	knownTerminals := []string{
-		"iTerm.app",    // iTerm2
-		"vscode",       // VSCode integrated terminal
-		"Tabby",        // Tabby terminal
-		"Hyper",        // Hyper terminal
-		"konsole",      // KDE Konsole
-		"Mintty",       // Windows Mintty (Git Bash, etc.)
-		"WarpTerminal", // Warp terminal
+		"iTerm.app",      // iTerm2
+		"vscode",         // VSCode integrated terminal
+		"Tabby",          // Tabby terminal
+		"Hyper",          // Hyper terminal
+		"konsole",        // KDE Konsole
+		"Mintty",         // Windows Mintty (Git Bash, etc.)
+		"WarpTerminal",   // Warp terminal
+		"WezTerm",        // WezTerm also supports iTerm2 protocol
+		"rio",            // Rio terminal
+		"Bobcat",         // Bobcat terminal
 	}
 
 	// Check TERM_PROGRAM environment variable

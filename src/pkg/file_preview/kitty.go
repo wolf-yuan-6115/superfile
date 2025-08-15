@@ -5,43 +5,10 @@ import (
 	"fmt"
 	"image"
 	"log/slog"
-	"os"
 	"strconv"
-	"strings"
 
 	"github.com/BourgeoisBear/rasterm"
 )
-
-// isKittyCapable checks if the terminal supports Kitty graphics protocol
-func isKittyCapable() bool {
-	isCapable := rasterm.IsKittyCapable()
-
-	// Additional detection for terminals that might not be detected by rasterm
-	if !isCapable {
-		termProgram := os.Getenv("TERM_PROGRAM")
-		term := os.Getenv("TERM")
-
-		// List of known terminal identifiers that support Kitty protocol
-		knownTerminals := []string{
-			"ghostty",
-			"WezTerm",
-			"iTerm2",
-			"xterm-kitty",
-			"kitty",
-			"Konsole",
-			"WarpTerminal",
-		}
-
-		for _, knownTerm := range knownTerminals {
-			if strings.EqualFold(termProgram, knownTerm) || strings.EqualFold(term, knownTerm) {
-				isCapable = true
-				break
-			}
-		}
-	}
-
-	return isCapable
-}
 
 // ClearKittyImages clears all Kitty protocol images from the terminal
 func ClearKittyImages() string {
@@ -141,9 +108,4 @@ func (p *ImagePreviewer) renderWithKittyUsingTermCap(img image.Image, path strin
 	buf.WriteString("\x1b[1;" + strconv.Itoa(sideAreaWidth) + "H")
 
 	return buf.String(), nil
-}
-
-// IsKittyCapable checks if the terminal supports Kitty graphics protocol
-func (p *ImagePreviewer) IsKittyCapable() bool {
-	return isKittyCapable()
 }

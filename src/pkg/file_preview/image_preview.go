@@ -24,6 +24,7 @@ const (
 	RendererANSI ImageRenderer = iota
 	RendererKitty
 	RendererITerm2
+	RendererSixel
 )
 
 // ImagePreviewCache stores cached image previews
@@ -255,8 +256,26 @@ func (p *ImagePreviewer) ImagePreview(path string, maxWidth int, maxHeight int,
 			return preview, nil
 		}
 
-		// Fall through to ANSI if iTerm2 fails
-		slog.Error("iTerm2 renderer failed, falling back to ANSI", "error", err)
+		// Fall through to Sixel if iTerm2 fails
+		slog.Error("iTerm2 renderer failed, trying Sixel", "error", err)
+	}
+
+	// Try Sixel graphics as third choice
+	if p.IsSixelCapable() {
+		// Check cache for Sixel renderer
+		if preview, found := p.cache.Get(path, dimensions, RendererSixel); found {
+			return preview, nil
+		}
+
+		preview, err := p.ImagePreviewWithRenderer(path, maxWidth, maxHeight, defaultBGColor, RendererSixel, sideAreaWidth)
+		if err == nil {
+			// Cache the successful result
+			p.cache.Set(path, dimensions, preview, RendererSixel)
+			return preview, nil
+		}
+
+		// Fall through to ANSI if Sixel fails
+		slog.Error("Sixel renderer failed, falling back to ANSI", "error", err)
 	}
 
 	// Check cache for ANSI renderer
@@ -318,6 +337,16 @@ func (p *ImagePreviewer) ImagePreviewWithRenderer(path string, maxWidth int, max
 		if err != nil {
 			// If iTerm2 fails, fall back to ANSI renderer
 			slog.Error("iTerm2 renderer failed, falling back to ANSI", "error", err)
+			return p.ANSIRenderer(img, defaultBGColor, maxWidth, maxHeight)
+		}
+		return result, nil
+
+	case RendererSixel:
+		result, err := p.renderWithSixel(img, path, originalWidth,
+			originalHeight, maxWidth, maxHeight, sideAreaWidth)
+		if err != nil {
+			// If Sixel fails, fall back to ANSI renderer
+			slog.Error("Sixel renderer failed, falling back to ANSI", "error", err)
 			return p.ANSIRenderer(img, defaultBGColor, maxWidth, maxHeight)
 		}
 		return result, nil
