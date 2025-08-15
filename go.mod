@@ -14,6 +14,7 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/hymkor/trash-go v0.2.0
 	github.com/lithammer/shortuuid v3.0.0+incompatible
+	github.com/mattn/go-sixel v0.0.5
 	github.com/muesli/termenv v0.16.0
 	github.com/reinhrst/fzf-lib v0.9.0
 	github.com/rkoesters/xdg v0.0.1
@@ -30,6 +31,7 @@ require (
 	github.com/ebitengine/purego v0.8.3 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
+	github.com/soniakeys/quant v1.0.0 // indirect
 	golang.org/x/term v0.18.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
